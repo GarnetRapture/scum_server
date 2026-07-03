@@ -13,6 +13,10 @@ web_panel/node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+.env
+
+# Security & Configurations (RCON 패스워드 및 로컬 경로 보호)
+config.json
 
 # SteamCMD / SCUM Server Files
 scum_server_files/
