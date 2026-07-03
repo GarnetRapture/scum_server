@@ -1,0 +1,5 @@
+@sSteamCmdForcePlatformType windows
+force_install_dir "D:\scum_server\scum_server_files"
+login anonymous
+app_update 3792580 validate
+quit
