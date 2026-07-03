@@ -21,6 +21,7 @@ config.json
 # SteamCMD / SCUM Server Files
 scum_server_files/
 steamcmd/
+release/
 
 # Large binaries & Logs
 *.db

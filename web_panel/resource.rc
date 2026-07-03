@@ -28,3 +28,5 @@ BEGIN
         VALUE "Translation", 0x412, 1200
     END
 END
+
+1 RT_MANIFEST "run_web_panel.manifest"

@@ -1,7 +1,14 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { i18n, type Lang } from '../utils/i18n';
 
 interface MapCoords {
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface PlayerLocation {
+  name: string;
   x: number;
   y: number;
   z: number;
@@ -29,6 +36,24 @@ export default function MapTab({
   lang,
 }: MapTabProps) {
   const t = i18n[lang];
+  const [players, setPlayers] = useState<PlayerLocation[]>([]);
+
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      try {
+        const res = await fetch('/api/players-locations');
+        const data = await res.json();
+        if (data.success && data.players) {
+          setPlayers(data.players);
+        }
+      } catch (err) {
+        console.error('실시간 플레이어 위치 로드 실패:', err);
+      }
+    };
+    fetchPlayers();
+    const interval = setInterval(fetchPlayers, 5000); // 5초 주기로 갱신
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(teleportCmd);
@@ -52,16 +77,34 @@ export default function MapTab({
           >
             {markerPos && (
               <div 
-                className="absolute w-3.5 h-3.5 bg-neon-blue rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_#00f0ff,0_0_20px_#00f0ff] animate-ping"
+                className="absolute w-3.5 h-3.5 bg-neon-blue rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_#00f0ff,0_0_20px_#00f0ff] animate-ping z-10"
                 style={{ top: markerPos.top, left: markerPos.left }}
               />
             )}
             {markerPos && (
               <div 
-                className="absolute w-3.5 h-3.5 bg-neon-blue rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_#00f0ff,0_0_20px_#00f0ff]"
+                className="absolute w-3.5 h-3.5 bg-neon-blue rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_10px_#00f0ff,0_0_20px_#00f0ff] z-10"
                 style={{ top: markerPos.top, left: markerPos.left }}
               />
             )}
+
+            {/* Real-time Player Locations Overlay */}
+            {players.map((p, idx) => {
+              const leftPercent = ((p.x + 300000) / 600000) * 100;
+              const topPercent = ((p.y + 300000) / 600000) * 100;
+              return (
+                <div
+                  key={idx}
+                  className="absolute w-3 h-3 bg-neon-green rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_8px_#39ff14] group cursor-pointer z-20"
+                  style={{ top: `${topPercent}%`, left: `${leftPercent}%` }}
+                >
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 bg-black/90 border border-white/10 text-white text-[10px] px-2 py-1 rounded shadow-md pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-mono">
+                    👤 {p.name} (Z: {p.z})
+                  </div>
+                </div>
+              );
+            })}
+
             <span className="font-heading text-xs tracking-widest text-white/10 pointer-events-none">{t.mapGrid}</span>
           </div>
         </div>

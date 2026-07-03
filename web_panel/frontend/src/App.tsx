@@ -5,6 +5,7 @@ import SettingsTab from './components/SettingsTab';
 import RconTab from './components/RconTab';
 import MapTab from './components/MapTab';
 import ConfigTab from './components/ConfigTab';
+import CheatsTab from './components/CheatsTab';
 import type { Lang } from './utils/i18n';
 
 type RconLogEntry = {
@@ -13,7 +14,9 @@ type RconLogEntry = {
 };
 
 type Settings = {
-  [key: string]: string;
+  [section: string]: {
+    [key: string]: string;
+  };
 };
 
 type Config = {
@@ -24,7 +27,7 @@ type Config = {
 };
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'settings' | 'rcon' | 'map' | 'config'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'settings' | 'rcon' | 'map' | 'config' | 'cheats'>('dashboard');
   const [serverStatus, setServerStatus] = useState<'ONLINE' | 'OFFLINE' | 'CHECKING'>('CHECKING');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -47,7 +50,7 @@ function App() {
     rconPassword: ''
   });
 
-  // Settings State
+  // Settings State Default Config Mapping (다중 섹션 동적 구성)
   const [serverSettings, setServerSettings] = useState<Settings>({});
   const [engineSettings, setEngineSettings] = useState<Settings>({});
 
@@ -203,7 +206,8 @@ function App() {
       wsRef.current.close();
     }
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}`;
+    const wsHost = import.meta.env.DEV ? 'localhost:3000' : window.location.host;
+    const wsUrl = `${protocol}//${wsHost}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -270,12 +274,24 @@ function App() {
     setMessage(`복사 완료: ${cmd}`);
   };
 
-  const handleSettingChange = (section: 'server' | 'engine', key: string, val: string | boolean) => {
+  const handleSettingChange = (type: 'server' | 'engine', sectionName: string, key: string, val: string | boolean) => {
     const strVal = typeof val === 'boolean' ? (val ? 'True' : 'False') : val;
-    if (section === 'server') {
-      setServerSettings(prev => ({ ...prev, [key]: strVal }));
+    if (type === 'server') {
+      setServerSettings(prev => ({
+        ...prev,
+        [sectionName]: {
+          ...(prev[sectionName] || {}),
+          [key]: strVal
+        }
+      }));
     } else {
-      setEngineSettings(prev => ({ ...prev, [key]: strVal }));
+      setEngineSettings(prev => ({
+        ...prev,
+        [sectionName]: {
+          ...(prev[sectionName] || {}),
+          [key]: strVal
+        }
+      }));
     }
   };
 
@@ -366,6 +382,15 @@ function App() {
             config={config}
             handleSaveConfig={handleSaveConfig}
             loading={loading}
+            lang={lang}
+          />
+        )}
+
+        {/* Tab 6: Cheats cheat sheet admin helper */}
+        {activeTab === 'cheats' && (
+          <CheatsTab 
+            rconConnected={rconConnected}
+            handleSendRconCommand={handleSendRconCommand}
             lang={lang}
           />
         )}

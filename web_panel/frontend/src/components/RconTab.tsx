@@ -23,6 +23,41 @@ interface RconTabProps {
   lang: Lang;
 }
 
+const COMMANDS_LIST = [
+  { category: "Player Management", commands: [
+    { text: "List Active Players", value: "#ListPlayers" },
+    { text: "Kick Player", value: "#Kick " },
+    { text: "Ban Player", value: "#Ban " },
+    { text: "Unban Player (SteamID)", value: "#Unban " },
+    { text: "Mute Player Chat", value: "#Mute " },
+    { text: "Unmute Player Chat", value: "#Unmute " },
+    { text: "Set Fame Points", value: "#SetFamePoints 100 " }
+  ]},
+  { category: "Teleportation", commands: [
+    { text: "Teleport to Coordinates", value: "#Teleport " },
+    { text: "Teleport to Player", value: "#TeleportTo " },
+    { text: "Teleport Player to Me", value: "#TeleportHere " }
+  ]},
+  { category: "Environment & Cheats", commands: [
+    { text: "Set Time of Day (0-24)", value: "#SetTime 12" },
+    { text: "Set Weather (0-1)", value: "#SetWeather 0" },
+    { text: "Toggle God Mode", value: "#God" },
+    { text: "Toggle Invisibility", value: "#Invisible" }
+  ]},
+  { category: "Spawning & Destroying", commands: [
+    { text: "Spawn Item (Asset Qty)", value: "#SpawnItem " },
+    { text: "Spawn Vehicle (Asset)", value: "#SpawnVehicle " },
+    { text: "Destroy Vehicle (ID)", value: "#DestroyVehicle " },
+    { text: "Destroy All Vehicles", value: "#DestroyAllVehicles" },
+    { text: "Destroy All Zombies", value: "#DestroyAllZombies" }
+  ]},
+  { category: "Server Control", commands: [
+    { text: "Save World Database", value: "#Save" },
+    { text: "Server Announcement Banner", value: "#Announce " },
+    { text: "Change Server Password", value: "#SetServerPassword " }
+  ]}
+];
+
 export default function RconTab({
   rconHost,
   setRconHost,
@@ -41,6 +76,29 @@ export default function RconTab({
 }: RconTabProps) {
   const t = i18n[lang];
   const terminalEndRef = useRef<HTMLDivElement | null>(null);
+
+  const handleSelectCommand = (val: string) => {
+    if (!val) return;
+    // 매개변수가 필요 없는 고정 명령은 즉시 자동 전송
+    const immediateCommands = [
+      "#ListPlayers", 
+      "#Save", 
+      "#ListVehicles", 
+      "#DestroyAllVehicles", 
+      "#DestroyAllZombies", 
+      "#God", 
+      "#Invisible"
+    ];
+    
+    if (immediateCommands.includes(val.trim())) {
+      handleSendRconCommand(val.trim());
+    } else {
+      setRconInput(val);
+      // 입력창으로 커서 포커스 유도
+      const inputEl = document.getElementById('rcon-cmd-input');
+      if (inputEl) inputEl.focus();
+    }
+  };
 
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -124,6 +182,7 @@ export default function RconTab({
           {/* Input Bar */}
           <div className="flex gap-2">
             <input 
+              id="rcon-cmd-input"
               type="text" 
               value={rconInput}
               disabled={!rconConnected}
@@ -141,12 +200,38 @@ export default function RconTab({
             </button>
           </div>
 
-          {/* Macros */}
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span>{t.macroTitle}</span>
-            <button onClick={() => handleSendRconCommand('#ListPlayers')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroList}</button>
-            <button onClick={() => handleSendRconCommand('#Save')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroSave}</button>
-            <button onClick={() => handleSendRconCommand('#ListVehicles')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroVehicles}</button>
+          {/* Macros & Command Helper */}
+          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 border-t border-white/5 pt-2 justify-between">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span>{t.macroTitle}</span>
+              <button onClick={() => handleSendRconCommand('#ListPlayers')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroList}</button>
+              <button onClick={() => handleSendRconCommand('#Save')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroSave}</button>
+              <button onClick={() => handleSendRconCommand('#ListVehicles')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroVehicles}</button>
+              <button onClick={() => handleSendRconCommand('#God')} disabled={!rconConnected} className="bg-green-950/40 hover:bg-green-900/60 text-neon-green border border-green-500/20 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed font-semibold">🛡️ God</button>
+              <button onClick={() => handleSendRconCommand('#Invisible')} disabled={!rconConnected} className="bg-purple-950/40 hover:bg-purple-900/60 text-purple-300 border border-purple-500/20 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed font-semibold">👻 Ghost</button>
+              <button onClick={() => handleSendRconCommand('#DestroyAllZombies')} disabled={!rconConnected} className="bg-red-950/40 hover:bg-red-900/60 text-neon-red border border-red-500/20 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed font-semibold">☠️ Kill Z</button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-gray-400">{t.cmdHelper}:</span>
+              <select
+                onChange={(e) => {
+                  handleSelectCommand(e.target.value);
+                  e.target.value = "";
+                }}
+                disabled={!rconConnected}
+                className="bg-black/60 border border-white/15 text-[11px] text-gray-300 rounded px-2 py-1 outline-none focus:border-neon-blue cursor-pointer disabled:cursor-not-allowed"
+              >
+                <option value="">-- {t.selectCmd} --</option>
+                {COMMANDS_LIST.map((cat, idx) => (
+                  <optgroup key={idx} label={cat.category} className="bg-neutral-900 text-gray-400 text-[10px]">
+                    {cat.commands.map((cmd, cIdx) => (
+                      <option key={cIdx} value={cmd.value} className="bg-neutral-800 text-white text-[11px]">{cmd.text} ({cmd.value.trim()})</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>

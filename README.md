@@ -35,7 +35,7 @@ graph TD
 ### 📂 프로젝트 아키텍처 구조
 ```text
 d:\scum_server
-├── run_web_panel.exe        <- 마스터 런처 (콘솔 창 없는 백그라운드 윈도우 그래픽 바이너리)
+├── run_web_panel.exe        <- 마스터 런처 (콘솔 로그 스트리밍 및 동반 종료 지원 콘솔 윈도우)
 ├── build_project.bat       <- 프론트 빌드 및 배포 패키지(release/) 일괄 구성기
 ├── start_scum_server.bat    <- CPU 격리 구동 배치 스크립트 (코어 0~3 격리)
 ├── update_scum_server.bat   <- SteamCMD 연동 비대화식 게임 다운로드 스크립트
@@ -58,7 +58,7 @@ d:\scum_server
 
 ### ⚡ 실행 및 구동 가이드
 1. 최상위 루트 디렉터리의 **[run_web_panel.exe](file:///d:/scum_server/run_web_panel.exe)**를 실행합니다.
-2. 실행과 동시에 브라우저가 자동 개방되며 `http://localhost:3000` 관리 화면으로 연결됩니다 (백엔드는 창이 뜨지 않는 서비스 모드로 구동됩니다).
+2. 실행과 동시에 브라우저가 자동 개방되며 `http://localhost:3000` 관리 화면으로 연결되며, 백엔드 콘솔 창이 화면에 상주하여 실시간 로그를 출력합니다.
 3. **최초 설치 시**: 대시보드 하단의 **스팀 CMD 자동 다운로드 및 구성**을 클릭하면, SteamCMD 도구를 자동으로 획득하고 다운로드를 대기합니다.
 4. **설정 주입**: 인게임 설정을 제어한 뒤 '설정 저장'을 누르면 설정 파일에 즉시 주입되며, 수동 주입 시 [apply_server_settings.ps1](file:///d:/scum_server/apply_server_settings.ps1)을 구동해도 안전하게 동기화 주입됩니다.
 
@@ -87,7 +87,7 @@ Refer to the [Korean Structure Section](#-프로젝트-아키텍처-구조) for 
 
 ### ⚡ Operational Guide
 1. Launch **[run_web_panel.exe](file:///d:/scum_server/run_web_panel.exe)** at the root path.
-2. The browser automatically navigates to `http://localhost:3000` while the backend runs silently in the background.
+2. The browser automatically navigates to `http://localhost:3000` while the backend console window streams server logs.
 3. **Initial setup**: Click **⚙️ Auto-Download & Install SteamCMD** to download and expand the SteamCMD package automatically.
 4. **Synchronized settings**: Changing variables in the GUI updates the ini files and commits data to [config.json](file:///d:/scum_server/config.json) concurrently, preserving unified configs even if run via command line.
 
@@ -113,7 +113,7 @@ SCUM 専用サーバー向けの高機能多言語 Web GUI ダッシュボード
 
 ### ⚡ 運用マニュアル
 1. ルートフォルダにある **[run_web_panel.exe](file:///d:/scum_server/run_web_panel.exe)** を起動します。
-2. コマンドプロンプト画面を生成させず、バックグラウンドプロセスとして起動し、自動的に `http://localhost:3000` にアクセスします。
+2. 起動と同時にブラウザが自動的に開き `http://localhost:3000` にアクセスし、バックエンドのコマンドプロンプト画面でリアルタイムログが出力されます。
 3. **初期設定**: 画面の下部にある **SteamCMD 自動ダウンロードと展開** をクリックしてセットアップを完了させます。
 4. **設定同期化**: パネルから編集を行うと、各種 ini と [config.json](file:///d:/scum_server/config.json) に同時保存され、どの実行プロセスからでも整合性が保たれます。
 
@@ -139,7 +139,7 @@ SCUM 専用サーバー向けの高機能多言語 Web GUI ダッシュボード
 
 ### ⚡ 运行使用指南
 1. 运行根目录下的 **[run_web_panel.exe](file:///d:/scum_server/run_web_panel.exe)**。
-2. 系统会自动调用默认浏览器打开网页 `http://localhost:3000`，后台以无窗口形式静默运行。
+2. 系统会自动调用默认浏览器打开网页 `http://localhost:3000`，同时控制台窗口将保持打开状态以输出后台实时日志。
 3. **首次部署**: 点击控制台选项卡下方的 **⚙️ 自动下载并配置 SteamCMD**，全自动配置运行环境。
 4. **数据同步**: 在控制面板上所做的所有配置均会直接修改 ini 配置文件，并同步保存至 [config.json](file:///d:/scum_server/config.json) 作为单源信任（Single Source of Truth）。
 
@@ -165,6 +165,6 @@ SCUM 専用サーバー向けの高機能多言語 Web GUI ダッシュボード
 
 ### ⚡ Руководство по эксплуатации
 1. Запустите файл **[run_web_panel.exe](file:///d:/scum_server/run_web_panel.exe)** в корневом каталоге.
-2. Программа запустит бэкенд в скрытом режиме и автоматически откроет веб-панель по адресу `http://localhost:3000`.
+2. Браузер автоматически откроет веб-панель по адресу `http://localhost:3000`, а консольное окно останется открытым для вывода логов.
 3. **Первоначальная настройка**: Нажмите **⚙️ Автозагрузка и настройка SteamCMD** для загрузки и распаковки всех необходимых утилит.
 4. **Синхронизация параметров**: Сохранение конфигурации в веб-интерфейсе перезаписывает ini-файлы и параллельно фиксирует новые переменные в [config.json](file:///d:/scum_server/config.json).

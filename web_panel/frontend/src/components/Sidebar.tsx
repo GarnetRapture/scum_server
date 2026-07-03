@@ -2,7 +2,7 @@ import { i18n, type Lang } from '../utils/i18n';
 
 interface SidebarProps {
   activeTab: string;
-  setActiveTab: (tab: 'dashboard' | 'settings' | 'rcon' | 'map' | 'config') => void;
+  setActiveTab: (tab: 'dashboard' | 'settings' | 'rcon' | 'map' | 'config' | 'cheats') => void;
   serverStatus: string;
   serverRootDir: string;
   lang: Lang;
@@ -95,6 +95,14 @@ export default function Sidebar({
             }`}
           >
             {t.tabConfig}
+          </button>
+          <button 
+            onClick={() => setActiveTab('cheats')} 
+            className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-all cursor-pointer ${
+              activeTab === 'cheats' ? 'bg-neon-blue/10 text-white border-l-4 border-neon-blue' : 'text-gray-400 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            {t.tabCheats}
           </button>
         </nav>
       </div>

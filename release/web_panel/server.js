@@ -80,11 +80,11 @@ app.post('/api/setup-steamcmd', (req, res) => {
 
 // 1. 서버 구동 상태 조회 API
 app.get('/api/status', (req, res) => {
-    exec('tasklist /FI "IMAGENAME eq SCUM_Server.exe"', (err, stdout, stderr) => {
+    exec('tasklist /FI "IMAGENAME eq SCUMServer.exe"', (err, stdout, stderr) => {
         if (err) {
             return res.json({ status: 'OFFLINE', error: err.message });
         }
-        const isRunning = stdout.includes('SCUM_Server.exe');
+        const isRunning = stdout.includes('SCUMServer.exe');
         res.json({
             status: isRunning ? 'ONLINE' : 'OFFLINE',
             uptime: isRunning ? '구동 중' : '중지됨'
@@ -107,9 +107,9 @@ app.post('/api/start', (req, res) => {
 
 // 3. 서버 중지 API
 app.post('/api/stop', (req, res) => {
-    exec('taskkill /f /im SCUM_Server.exe', (err, stdout, stderr) => {
+    exec('powershell -NoProfile -ExecutionPolicy Bypass -Command "Stop-Process -Name SCUMServer -Force"', (err, stdout, stderr) => {
         if (err) {
-            if (stdout.includes('not found') || stderr.includes('not found')) {
+            if (err.message.includes('Cannot find a process')) {
                 return res.json({ success: true, message: '이미 중지된 상태입니다.' });
             }
             return res.status(500).json({ success: false, error: err.message });
@@ -185,12 +185,16 @@ function writeIni(filePath, data) {
 app.get('/api/settings', (req, res) => {
     try {
         const paths = getPaths();
-        const serverSettings = parseIni(paths.serverSettings);
-        const engineSettings = parseIni(paths.engineSettings);
+        const serverSettings = fs.existsSync(paths.serverSettings) ? parseIni(paths.serverSettings) : {};
+        const engineSettings = fs.existsSync(paths.engineSettings) ? parseIni(paths.engineSettings) : {};
+        
+        const currentConfig = loadConfig();
+        
+        // 물리 INI 파일이 유효하지 않을 경우를 위한 config.json 마스터 백업 폴백 제공
         res.json({
             success: true,
-            server: serverSettings['scum'] || {},
-            engine: engineSettings['/Script/Engine.Engine'] || {}
+            server: Object.keys(serverSettings).length > 0 ? serverSettings : (currentConfig.server || {}),
+            engine: Object.keys(engineSettings).length > 0 ? engineSettings : (currentConfig.engine || {})
         });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
@@ -203,15 +207,19 @@ app.post('/api/settings', (req, res) => {
         const paths = getPaths();
         const { server, engine } = req.body;
         
-        // 1. INI 파일 직접 변경
+        // 1. INI 파일 직접 변경 (다중 섹션의 모든 키에 대해 루프 적용)
         if (server) {
-            writeIni(paths.serverSettings, { 'scum': server });
+            for (const section in server) {
+                writeIni(paths.serverSettings, { [section]: server[section] });
+            }
         }
         if (engine) {
-            writeIni(paths.engineSettings, { '/Script/Engine.Engine': engine });
+            for (const section in engine) {
+                writeIni(paths.engineSettings, { [section]: engine[section] });
+            }
         }
         
-        // 2. config.json 설정 동기화 저장 (동기화 원천 보장)
+        // 2. config.json 설정 동기화 저장
         const currentConfig = loadConfig();
         if (server) {
             currentConfig.server = { ...currentConfig.server, ...server };
@@ -227,42 +235,123 @@ app.post('/api/settings', (req, res) => {
     }
 });
 
-// 6. WebSocket RCON 연결 게이트웨이
+// 6. 전역 RCON & 플레이어 위치 트래킹 게이트웨이
+let activeRcon = null;
+let cachedPlayers = [];
+
+// 백그라운드 트래킹 루프 (재귀적 setTimeout 구조로 동시성 중첩 및 메모리 누수 원천 제거)
+async function updatePlayersLocation() {
+    if (!activeRcon || !activeRcon.connected) {
+        setTimeout(updatePlayersLocation, 8000);
+        return;
+    }
+    try {
+        const listOutput = await activeRcon.send("#ListPlayers");
+        const names = parsePlayerNames(listOutput);
+        const tempPlayers = [];
+        
+        for (const name of names) {
+            if (!activeRcon || !activeRcon.connected) break;
+            const locOutput = await activeRcon.send(`#Location ${name}`);
+            const coords = parseCoords(locOutput);
+            if (coords) {
+                tempPlayers.push({ name, ...coords });
+            }
+        }
+        cachedPlayers = tempPlayers;
+    } catch (err) {
+        console.error("실시간 플레이어 좌표 동기화 실패:", err.message);
+    } finally {
+        setTimeout(updatePlayersLocation, 8000);
+    }
+}
+
+// 8초 주기로 플레이어 위치 갱신 예약 시작
+setTimeout(updatePlayersLocation, 8000);
+
+function parsePlayerNames(output) {
+    const names = [];
+    if (!output) return names;
+    const lines = output.split(/\r?\n/);
+    lines.forEach(line => {
+        let match = line.match(/^\d+\.\s+([^\(]+)\s+\(/);
+        if (match) {
+            names.push(match[1].trim());
+        } else {
+            match = line.match(/Name:\s+([^,]+)/);
+            if (match) {
+                names.push(match[1].trim());
+            }
+        }
+    });
+    return names;
+}
+
+function parseCoords(output) {
+    if (!output) return null;
+    const match = output.match(/X=([-\d\.]+)\s+Y=([-\d\.]+)\s+Z=([-\d\.]+)/);
+    if (match) {
+        return {
+            x: Math.round(parseFloat(match[1])),
+            y: Math.round(parseFloat(match[2])),
+            z: Math.round(parseFloat(match[3]))
+        };
+    }
+    return null;
+}
+
+// 실시간 플레이어 위치 정보 반환 API
+app.get('/api/players-locations', (req, res) => {
+    res.json({
+        success: true,
+        players: cachedPlayers
+    });
+});
+
+// WebSocket RCON 게이트웨이
 wss.on('connection', (ws) => {
     console.log('클라이언트 웹소켓 연결 성공');
-    let rcon = null;
+
+    if (activeRcon && activeRcon.connected) {
+        ws.send(JSON.stringify({ type: 'status', success: true, message: 'RCON이 이미 연결되어 있습니다.' }));
+    }
 
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
             if (data.type === 'connect') {
                 const { host, port, password } = data;
-                rcon = new Rcon({ host, port: parseInt(port), password });
                 
-                await rcon.connect();
+                if (activeRcon) {
+                    try { await activeRcon.end(); } catch (e) {}
+                }
+
+                activeRcon = new Rcon({ host, port: parseInt(port), password });
+                await activeRcon.connect();
+                
                 ws.send(JSON.stringify({ type: 'status', success: true, message: 'RCON 연결에 성공했습니다.' }));
             } else if (data.type === 'command') {
-                if (!rcon) {
+                if (!activeRcon || !activeRcon.connected) {
                     return ws.send(JSON.stringify({ type: 'response', success: false, output: 'RCON이 연결되어 있지 않습니다.' }));
                 }
-                const output = await rcon.send(data.command);
+                const output = await activeRcon.send(data.command);
                 ws.send(JSON.stringify({ type: 'response', success: true, output }));
             }
         } catch (err) {
             ws.send(JSON.stringify({ type: 'error', message: `에러 발생: ${err.message}` }));
-            if (rcon) {
-                try { await rcon.end(); } catch (e) {}
-                rcon = null;
+            if (activeRcon) {
+                try { await activeRcon.end(); } catch (e) {}
+                activeRcon = null;
             }
         }
     });
 
-    ws.on('close', async () => {
-        if (rcon) {
-            try { await rcon.end(); } catch (e) {}
-            rcon = null;
-        }
+    ws.on('close', () => {
         console.log('클라이언트 웹소켓 연결 해제');
+        if (activeRcon) {
+            activeRcon.end().catch(() => {});
+            activeRcon = null;
+        }
     });
 });
 

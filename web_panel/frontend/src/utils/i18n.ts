@@ -8,6 +8,7 @@ export const i18n = {
     tabRcon: "💻 RCON 콘솔",
     tabMap: "🗺️ 텔레포트 맵",
     tabConfig: "📁 시스템 설정",
+    tabCheats: "🛡️ 치트 도우미",
     uptime: "구동 중",
     stopped: "중지됨",
     checking: "확인 중",
@@ -74,6 +75,8 @@ export const i18n = {
     macroList: "접속자 정보",
     macroSave: "서버 저장",
     macroVehicles: "차량 목록",
+    cmdHelper: "명령어 빠른 입력",
+    selectCmd: "명령어 선택...",
     
     // Map
     mapTitle: "인터랙티브 텔레포트 맵 헬퍼",
@@ -100,6 +103,7 @@ export const i18n = {
     tabRcon: "💻 RCON Console",
     tabMap: "🗺️ Teleport Map",
     tabConfig: "📁 System Config",
+    tabCheats: "🛡️ Cheats Helper",
     uptime: "ONLINE",
     stopped: "OFFLINE",
     checking: "Checking",
@@ -166,6 +170,8 @@ export const i18n = {
     macroList: "Player List",
     macroSave: "Save Server",
     macroVehicles: "Vehicle List",
+    cmdHelper: "Command Cheat Sheet",
+    selectCmd: "Select a command...",
     
     // Map
     mapTitle: "Interactive Teleport Map Helper",
@@ -192,6 +198,7 @@ export const i18n = {
     tabRcon: "💻 RCONコンソール",
     tabMap: "🗺️ テレポートマップ",
     tabConfig: "📁 システム設定",
+    tabCheats: "🛡️ チートヘルパー",
     uptime: "稼働中",
     stopped: "停止中",
     checking: "確認中",
@@ -258,6 +265,8 @@ export const i18n = {
     macroList: "接続プレイヤー",
     macroSave: "サーバー保存",
     macroVehicles: "車両リスト",
+    cmdHelper: "コマンドクイック入力",
+    selectCmd: "コマンドを選択...",
     
     // Map
     mapTitle: "テレポート マップ ヘルパー",
@@ -284,6 +293,7 @@ export const i18n = {
     tabRcon: "💻 RCON 控制台",
     tabMap: "🗺️ 传送地图",
     tabConfig: "📁 系统配置",
+    tabCheats: "🛡️ 辅助指令",
     uptime: "正在运行",
     stopped: "已停止",
     checking: "检查中",
@@ -350,6 +360,8 @@ export const i18n = {
     macroList: "玩家列表",
     macroSave: "保存服务器",
     macroVehicles: "车辆列表",
+    cmdHelper: "指令快速输入",
+    selectCmd: "选择指令...",
     
     // Map
     mapTitle: "交互式传送地图助手",
@@ -376,6 +388,7 @@ export const i18n = {
     tabRcon: "💻 RCON Консоль",
     tabMap: "🗺️ Карта портов",
     tabConfig: "📁 Конфигурация",
+    tabCheats: "🛡️ Читы",
     uptime: "АКТИВЕН",
     stopped: "ОСТАНОВЛЕН",
     checking: "Проверка",
@@ -442,6 +455,8 @@ export const i18n = {
     macroList: "Список игроков",
     macroSave: "Сохранить сервер",
     macroVehicles: "Список транспорта",
+    cmdHelper: "Быстрый ввод команд",
+    selectCmd: "Выберите команду...",
     
     // Map
     mapTitle: "Интерактивный телепорт-помощник",

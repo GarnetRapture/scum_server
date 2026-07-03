@@ -24,7 +24,7 @@ if %ERRORLEVEL% neq 0 (
     goto error
 )
 
-gcc -O2 run_web_panel.c resource.res -o ..\run_web_panel.exe -mwindows
+gcc -O2 run_web_panel.c resource.res -o ..\run_web_panel.exe
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] GCC compiler linking failed.
     goto error
@@ -62,6 +62,17 @@ copy "%~dp0web_panel\package-lock.json" "%RELEASE_DIR%\web_panel" > nul
 
 :: Copy Frontend distribution build files
 xcopy "%~dp0web_panel\frontend\dist" "%RELEASE_DIR%\web_panel\frontend\dist" /e /h /y > nul
+
+:: Install production dependencies for backend
+echo [*] Step 4: Installing production dependencies in release folder...
+cd /d "%RELEASE_DIR%\web_panel"
+call npm install --omit=dev
+if %ERRORLEVEL% neq 0 (
+    echo [ERROR] Backend npm install in release folder failed.
+    goto error
+)
+echo [OK] Release production dependencies installed.
+
 echo [OK] Release folder generated at: %RELEASE_DIR%
 
 echo ==========================================================
