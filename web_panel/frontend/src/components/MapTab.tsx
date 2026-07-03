@@ -1,4 +1,5 @@
 import React from 'react';
+import { i18n, type Lang } from '../utils/i18n';
 
 interface MapCoords {
   x: number;
@@ -14,6 +15,7 @@ interface MapTabProps {
   mapCanvasRef: React.RefObject<HTMLDivElement | null>;
   teleportCmd: string;
   setMessage: (msg: string | null) => void;
+  lang: Lang;
 }
 
 export default function MapTab({
@@ -24,17 +26,20 @@ export default function MapTab({
   mapCanvasRef,
   teleportCmd,
   setMessage,
+  lang,
 }: MapTabProps) {
+  const t = i18n[lang];
+
   const handleCopy = () => {
     navigator.clipboard.writeText(teleportCmd);
-    setMessage(`복사 완료: ${teleportCmd}`);
+    setMessage(`${t.btnCopy} ${t.connSuccess}: ${teleportCmd}`);
   };
 
   return (
     <div className="flex flex-col gap-8 h-full">
       <div>
-        <h1 className="font-heading text-3xl font-bold text-white mb-2">인터랙티브 텔레포트 맵 헬퍼</h1>
-        <p className="text-gray-400 text-sm">맵의 임의 지점을 좌클릭하여 인게임 텔레포트 복사용 절대 좌표를 파싱합니다.</p>
+        <h1 className="font-heading text-3xl font-bold text-white mb-2">{t.mapTitle}</h1>
+        <p className="text-gray-400 text-sm">{t.mapDesc}</p>
       </div>
 
       <div className="grid grid-cols-[1fr_340px] gap-8 h-[520px]">
@@ -57,19 +62,19 @@ export default function MapTab({
                 style={{ top: markerPos.top, left: markerPos.left }}
               />
             )}
-            <span className="font-heading text-xs tracking-widest text-white/10 pointer-events-none">SCUM 12KM WORLD GRID</span>
+            <span className="font-heading text-xs tracking-widest text-white/10 pointer-events-none">{t.mapGrid}</span>
           </div>
         </div>
 
         {/* Coordinates parsing */}
         <div className="flex flex-col gap-5 justify-between">
           <div className="border border-white/10 bg-white/5 rounded-2xl p-6 flex flex-col gap-4 shadow-md">
-            <h3 className="text-white font-bold border-l-3 border-neon-blue pl-2 text-sm">텔레포트 좌표 연동</h3>
+            <h3 className="text-white font-bold border-l-3 border-neon-blue pl-2 text-sm">{t.mapCoordsSetup}</h3>
             <div className="bg-black/30 border border-white/10 rounded-lg p-4 flex flex-col gap-2 font-mono text-sm">
-              <p>게임 X: <span className="text-neon-blue">{mapCoords.x}</span></p>
-              <p>게임 Y: <span className="text-neon-blue">{mapCoords.y}</span></p>
+              <p>Game X: <span className="text-neon-blue">{mapCoords.x}</span></p>
+              <p>Game Y: <span className="text-neon-blue">{mapCoords.y}</span></p>
               <div className="flex items-center gap-2">
-                <span>게임 Z (고도):</span>
+                <span>{t.labelGameZ}</span>
                 <input 
                   type="number" 
                   value={mapCoords.z} 
@@ -80,7 +85,7 @@ export default function MapTab({
             </div>
 
             <div className="flex flex-col gap-2 mt-2">
-              <label className="text-xs text-gray-500">생성된 이동 명령어</label>
+              <label className="text-xs text-gray-500">{t.labelCmdGenerated}</label>
               <div className="flex gap-2">
                 <input 
                   type="text" 
@@ -92,15 +97,14 @@ export default function MapTab({
                   onClick={handleCopy}
                   className="bg-blue-700 hover:bg-blue-600 text-white font-semibold text-xs px-4 py-2 rounded-lg transition-all cursor-pointer"
                 >
-                  복사
+                  {t.btnCopy}
                 </button>
               </div>
             </div>
           </div>
 
-          <p className="text-xs text-gray-500 leading-relaxed font-mono">
-            * 맵 격자 영역을 클릭하면 위치에 해당하는 스컴 게임 내 절대 좌표로 매핑됩니다.
-            * 복사한 명령어를 게임 접속 후 채팅창(T)에 붙여넣어 해당 위치로 텔레포트할 수 있습니다.
+          <p className="text-xs text-gray-500 leading-relaxed font-mono whitespace-pre-line">
+            {t.mapTip}
           </p>
         </div>
       </div>

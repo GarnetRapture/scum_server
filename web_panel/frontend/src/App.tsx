@@ -5,6 +5,7 @@ import SettingsTab from './components/SettingsTab';
 import RconTab from './components/RconTab';
 import MapTab from './components/MapTab';
 import ConfigTab from './components/ConfigTab';
+import type { Lang } from './utils/i18n';
 
 type RconLogEntry = {
   type: 'info' | 'response' | 'error' | 'command';
@@ -27,6 +28,16 @@ function App() {
   const [serverStatus, setServerStatus] = useState<'ONLINE' | 'OFFLINE' | 'CHECKING'>('CHECKING');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  // Persistent Language State
+  const [lang, setLang] = useState<Lang>(
+    (localStorage.getItem('scum_lang') as Lang) || 'ko'
+  );
+
+  const handleSetLang = (newLang: Lang) => {
+    setLang(newLang);
+    localStorage.setItem('scum_lang', newLang);
+  };
 
   // Master Configuration State
   const [config, setConfig] = useState<Config>({
@@ -256,7 +267,7 @@ function App() {
 
     const cmd = `#teleport ${gameX} ${gameY} ${mapCoords.z}`;
     navigator.clipboard.writeText(cmd);
-    setMessage(`클립보드 복사 완료: ${cmd}`);
+    setMessage(`복사 완료: ${cmd}`);
   };
 
   const handleSettingChange = (section: 'server' | 'engine', key: string, val: string | boolean) => {
@@ -278,6 +289,8 @@ function App() {
         setActiveTab={setActiveTab} 
         serverStatus={serverStatus}
         serverRootDir={config.serverRootDir}
+        lang={lang}
+        setLang={handleSetLang}
       />
 
       {/* Main Content Area */}
@@ -298,6 +311,7 @@ function App() {
             handleStart={handleStart}
             handleStop={handleStop}
             handleSetupSteamCMD={handleSetupSteamCMD}
+            lang={lang}
           />
         )}
 
@@ -308,6 +322,7 @@ function App() {
             engineSettings={engineSettings}
             handleSettingChange={handleSettingChange}
             handleSaveSettings={handleSaveSettings}
+            lang={lang}
           />
         )}
 
@@ -327,6 +342,7 @@ function App() {
             handleSendRconCommand={handleSendRconCommand}
             rconInput={rconInput}
             setRconInput={setRconInput}
+            lang={lang}
           />
         )}
 
@@ -340,6 +356,7 @@ function App() {
             mapCanvasRef={mapCanvasRef}
             teleportCmd={teleportCmd}
             setMessage={setMessage}
+            lang={lang}
           />
         )}
 
@@ -349,6 +366,7 @@ function App() {
             config={config}
             handleSaveConfig={handleSaveConfig}
             loading={loading}
+            lang={lang}
           />
         )}
       </main>

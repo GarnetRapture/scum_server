@@ -1,4 +1,5 @@
 import { useRef, useEffect } from 'react';
+import { i18n, type Lang } from '../utils/i18n';
 
 type RconLogEntry = {
   type: 'info' | 'response' | 'error' | 'command';
@@ -19,6 +20,7 @@ interface RconTabProps {
   handleSendRconCommand: (cmdText?: string) => void;
   rconInput: string;
   setRconInput: (inp: string) => void;
+  lang: Lang;
 }
 
 export default function RconTab({
@@ -35,7 +37,9 @@ export default function RconTab({
   handleSendRconCommand,
   rconInput,
   setRconInput,
+  lang,
 }: RconTabProps) {
+  const t = i18n[lang];
   const terminalEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -45,16 +49,16 @@ export default function RconTab({
   return (
     <div className="flex flex-col gap-8 h-full">
       <div>
-        <h1 className="font-heading text-3xl font-bold text-white mb-2">RCON 원격 통신 콘솔</h1>
-        <p className="text-gray-400 text-sm">실시간 RCON 브릿지를 이용해 원격 서버 제어 및 공지 전송을 처리합니다.</p>
+        <h1 className="font-heading text-3xl font-bold text-white mb-2">{t.rconTitle}</h1>
+        <p className="text-gray-400 text-sm">{t.rconDesc}</p>
       </div>
 
       <div className="grid grid-cols-[280px_1fr] gap-8 h-[520px]">
         {/* RCON Credentials */}
         <div className="border border-white/10 bg-white/5 rounded-2xl p-6 flex flex-col gap-4 shadow-md">
-          <h3 className="text-white font-bold border-l-3 border-neon-blue pl-2 text-sm uppercase">RCON 연결 설정</h3>
+          <h3 className="text-white font-bold border-l-3 border-neon-blue pl-2 text-sm uppercase">{t.rconConnSetup}</h3>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-gray-500 uppercase font-bold">호스트 IP</label>
+            <label className="text-[10px] text-gray-500 uppercase font-bold">{t.labelHost}</label>
             <input 
               type="text" 
               value={rconHost} 
@@ -63,7 +67,7 @@ export default function RconTab({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-gray-500 uppercase font-bold">포트 (TCP)</label>
+            <label className="text-[10px] text-gray-500 uppercase font-bold">{t.labelPort}</label>
             <input 
               type="number" 
               value={rconPort} 
@@ -72,7 +76,7 @@ export default function RconTab({
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] text-gray-500 uppercase font-bold">패스워드</label>
+            <label className="text-[10px] text-gray-500 uppercase font-bold">{t.labelRconPw}</label>
             <input 
               type="password" 
               value={rconPassword} 
@@ -84,10 +88,10 @@ export default function RconTab({
             onClick={handleRconConnect}
             className="w-full bg-blue-700 hover:bg-blue-600 text-white font-semibold py-2.5 rounded-lg transition-all mt-2 cursor-pointer"
           >
-            RCON 연결
+            {t.btnRconConn}
           </button>
           <div className={`text-center font-bold text-xs mt-2 ${rconConnected ? 'text-neon-green' : 'text-neon-red'}`}>
-            {rconConnected ? '연결 성공' : '연결 해제됨'}
+            {rconConnected ? t.connSuccess : t.connDisconnected}
           </div>
         </div>
 
@@ -99,7 +103,7 @@ export default function RconTab({
               onClick={() => setRconLogs([])}
               className="bg-white/5 border border-white/10 hover:bg-white/10 text-gray-300 text-xs px-2.5 py-1 rounded cursor-pointer"
             >
-              출력 비우기
+              {t.btnClearConsole}
             </button>
           </div>
 
@@ -125,7 +129,7 @@ export default function RconTab({
               disabled={!rconConnected}
               onChange={(e) => setRconInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSendRconCommand()}
-              placeholder={rconConnected ? "명령어 입력... (예: #ListPlayers 또는 #Announce 환영합니다)" : "먼저 RCON을 연결하십시오."}
+              placeholder={rconConnected ? t.placeholderRconInput : t.placeholderRconDisabled}
               className="flex-grow bg-black/30 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:outline-none"
             />
             <button 
@@ -133,16 +137,16 @@ export default function RconTab({
               disabled={!rconConnected}
               className="bg-blue-700 hover:bg-blue-600 disabled:bg-gray-700 text-white px-5 py-2.5 rounded-lg transition-all cursor-pointer disabled:cursor-not-allowed"
             >
-              전송
+              {t.btnSend}
             </button>
           </div>
 
           {/* Macros */}
           <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span>매크로 단축키:</span>
-            <button onClick={() => handleSendRconCommand('#ListPlayers')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">접속자 정보</button>
-            <button onClick={() => handleSendRconCommand('#Save')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">서버 저장</button>
-            <button onClick={() => handleSendRconCommand('#ListVehicles')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">차량 목록</button>
+            <span>{t.macroTitle}</span>
+            <button onClick={() => handleSendRconCommand('#ListPlayers')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroList}</button>
+            <button onClick={() => handleSendRconCommand('#Save')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroSave}</button>
+            <button onClick={() => handleSendRconCommand('#ListVehicles')} disabled={!rconConnected} className="bg-white/5 hover:bg-white/10 text-white border border-white/10 px-2 py-1 rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed">{t.macroVehicles}</button>
           </div>
         </div>
       </div>
