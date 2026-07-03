@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --color-neon-blue: #00f0ff;
+  --color-neon-green: #39ff14;
+  --color-neon-red: #ff3131;
+  --color-bg-base: #080a0f;
+  --color-bg-surface: rgba(17, 22, 34, 0.75);
+  
+  --font-heading: 'Space Grotesk', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-bg-base text-gray-200 font-body min-h-screen overflow-x-hidden;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 240, 255, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
+  }
+}
+
+/* Glassmorphism utility */
+.glass {
+  background: rgba(17, 22, 34, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}

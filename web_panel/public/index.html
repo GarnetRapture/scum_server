@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCUM Dedicated Server Web Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+    <div class="glass-container">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="logo-text">SCUM PANEL</span>
+                <span id="server-status-badge" class="status-badge offline">OFFLINE</span>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="dashboard-tab">
+                    <span class="icon">📊</span> 대시보드
+                </button>
+                <button class="nav-btn" data-tab="settings-tab">
+                    <span class="icon">⚙️</span> 서버 설정
+                </button>
+                <button class="nav-btn" data-tab="rcon-tab">
+                    <span class="icon">💻</span> RCON 콘솔
+                </button>
+                <button class="nav-btn" data-tab="map-tab">
+                    <span class="icon">🗺️</span> 텔레포트 맵
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <p>System Specs: Ryzen 5800X / 64GB</p>
+                <p>&copy; Antigravity SCUM Panel</p>
+            </div>
+        </aside>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="main-content">
+            <!-- 탭 1: 대시보드 -->
+            <section id="dashboard-tab" class="tab-content active">
+                <div class="content-header">
+                    <h1>서버 제어 및 상태 모니터링</h1>
+                    <p>서버 인스턴스 전원 및 하드웨어 가상 부하 상태를 관리합니다.</p>
+                </div>
+                
+                <div class="grid-layout">
+                    <!-- 컨트롤 박스 -->
+                    <div class="panel control-panel">
+                        <h2>전원 컨트롤</h2>
+                        <div class="btn-group">
+                            <button id="btn-start" class="btn btn-green">서버 켜기</button>
+                            <button id="btn-stop" class="btn btn-red">서버 끄기</button>
+                            <button id="btn-refresh" class="btn btn-blue">상태 갱신</button>
+                        </div>
+                        <div class="status-box">
+                            <p>프로세스 상태: <span id="span-process-status">확인 중...</span></p>
+                            <p>접속 서버 포트: <span class="highlight">UDP 7777 - 7779</span></p>
+                        </div>
+                    </div>
+
+                    <!-- 모니터링 박스 -->
+                    <div class="panel monitoring-panel">
+                        <h2>시스템 리소스 (Affinity 격리 적용)</h2>
+                        <div class="spec-metrics">
+                            <div class="metric">
+                                <span class="metric-title">할당 CPU 코어 (0-3번)</span>
+                                <span class="metric-value">4스레드 고정</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-title">서버 전체 메모리 점유</span>
+                                <span class="metric-value">64GB RAM 여유</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭 2: 서버 설정 -->
+            <section id="settings-tab" class="tab-content">
+                <div class="content-header">
+                    <h1>서버 설정 관리</h1>
+                    <p>ServerSettings.ini 및 Engine.ini 설정을 GUI에서 직접 조율합니다.</p>
+                </div>
+                <form id="settings-form" class="panel">
+                    <div class="form-grid">
+                        <!-- 섹션: 기본 설정 -->
+                        <div class="form-section">
+                            <h3>1. 기본 서버 정보 및 암호</h3>
+                            <div class="form-group">
+                                <label for="cfg-ServerName">서버 이름</label>
+                                <input type="text" id="cfg-ServerName" name="scum.ServerName">
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-ServerPassword">접속 비밀번호</label>
+                                <input type="text" id="cfg-ServerPassword" name="scum.ServerPassword">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col">
+                                    <label for="cfg-MaxPlayers">최대 인원</label>
+                                    <input type="number" id="cfg-MaxPlayers" name="scum.MaxPlayers">
+                                </div>
+                                <div class="form-group col">
+                                    <label for="cfg-MaxPing">최대 핑 제한 (ms)</label>
+                                    <input type="number" id="cfg-MaxPing" name="scum.MaxPing">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 섹션: 최적화 & 콘텐츠 제어 -->
+                        <div class="form-section">
+                            <h3>2. 최적화 및 NPC 통제</h3>
+                            <div class="form-row">
+                                <div class="form-group col">
+                                    <label for="cfg-ServerFPSLimit">서버 FPS 제한</label>
+                                    <input type="number" id="cfg-ServerFPSLimit" name="scum.ServerFPSLimit">
+                                </div>
+                                <div class="form-group col">
+                                    <label for="cfg-MaxAnimalsOnServer">최대 동물 스폰 수</label>
+                                    <input type="number" id="cfg-MaxAnimalsOnServer" name="scum.MaxAnimalsOnServer">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-MaxAllowedVehicles">최대 차량 생성 수</label>
+                                <input type="number" id="cfg-MaxAllowedVehicles" name="scum.MaxAllowedVehicles">
+                            </div>
+                            <div class="toggle-group">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="cfg-DisableSentrySpawning" name="scum.DisableSentrySpawning">
+                                    <span class="slider"></span>
+                                    로봇(센트리) 스폰 완전 차단
+                                </label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="cfg-DisableSuicidePuppetSpawning" name="scum.DisableSuicidePuppetSpawning">
+                                    <span class="slider"></span>
+                                    자폭 좀비(Beep Zombie) 차단
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 섹션: 난이도 & 공중 보급 -->
+                        <div class="form-section">
+                            <h3>3. 밸런스 및 보급 설정</h3>
+                            <div class="form-row">
+                                <div class="form-group col">
+                                    <label for="cfg-CargoDropCooldownMinimum">최소 보급 주기 (분)</label>
+                                    <input type="number" id="cfg-CargoDropCooldownMinimum" name="scum.CargoDropCooldownMinimum">
+                                </div>
+                                <div class="form-group col">
+                                    <label for="cfg-CargoDropCooldownMaximum">최대 보급 주기 (분)</label>
+                                    <input type="number" id="cfg-CargoDropCooldownMaximum" name="scum.CargoDropCooldownMaximum">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-CargoDropSelfDestructTime">보급상자 자폭 대기 (초)</label>
+                                <input type="number" id="cfg-CargoDropSelfDestructTime" name="scum.CargoDropSelfDestructTime">
+                            </div>
+                            <div class="form-group">
+                                <label for="cfg-PuppetDamageMultiplier">좀비 공격력 배율</label>
+                                <input type="number" step="0.1" id="cfg-PuppetDamageMultiplier" name="scum.PuppetDamageMultiplier">
+                            </div>
+                        </div>
+
+                        <!-- 섹션: 캐릭터 대사량 및 엔진 튜닝 -->
+                        <div class="form-section">
+                            <h3>4. 언리얼 엔진 및 환경</h3>
+                            <div class="form-row">
+                                <div class="form-group col">
+                                    <label for="cfg-CalorieConsumption">칼로리 소모 배율</label>
+                                    <input type="number" step="0.1" id="cfg-CalorieConsumption" name="scum.CalorieConsumptionRateMultiplier">
+                                </div>
+                                <div class="form-group col">
+                                    <label for="cfg-WaterConsumption">수분 소모 배율</label>
+                                    <input type="number" step="0.1" id="cfg-WaterConsumption" name="scum.WaterConsumptionRateMultiplier">
+                                </div>
+                            </div>
+                            <div class="toggle-group">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="cfg-CreateGarbageCollectorUObjectClusters" name="engine.gc.CreateGarbageCollectorUObjectClusters">
+                                    <span class="slider"></span>
+                                    가비지 컬렉터 오브젝트 클러스터링
+                                </label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="cfg-ActorClusteringEnabled" name="engine.gc.ActorClusteringEnabled">
+                                    <span class="slider"></span>
+                                    액터 클러스터링 활성화
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-footer">
+                        <button type="button" id="btn-save-settings" class="btn btn-green">설정 물리 파일 반영 및 저장</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- 탭 3: RCON 터미널 -->
+            <section id="rcon-tab" class="tab-content">
+                <div class="content-header">
+                    <h1>RCON 원격 통신 콘솔</h1>
+                    <p>서버에 RCON 명령을 전송하여 유저를 통제하거나 실시간 서버 공지를 발송합니다.</p>
+                </div>
+                
+                <div class="rcon-layout">
+                    <!-- RCON 접속 폼 -->
+                    <div class="panel rcon-auth">
+                        <h3>RCON 접속 설정</h3>
+                        <div class="form-group">
+                            <label>접속 IP</label>
+                            <input type="text" id="rcon-host" value="127.0.0.1">
+                        </div>
+                        <div class="form-group">
+                            <label>포트 (TCP)</label>
+                            <input type="number" id="rcon-port" value="7777">
+                        </div>
+                        <div class="form-group">
+                            <label>비밀번호</label>
+                            <input type="password" id="rcon-password" value="ramker7792">
+                        </div>
+                        <button id="btn-rcon-connect" class="btn btn-green w-full">RCON 연결하기</button>
+                        <div id="rcon-status-text" class="status-text text-red">연결 대기 중</div>
+                    </div>
+
+                    <!-- RCON 터미널 창 -->
+                    <div class="panel rcon-terminal">
+                        <div class="terminal-header">
+                            <span>TERMINAL CONSOLE</span>
+                            <button id="btn-clear-console" class="btn btn-small">로그 비우기</button>
+                        </div>
+                        <div id="terminal-output" class="terminal-output">
+                            <p class="system-msg">[안내] RCON 접속 후 명령어를 사용할 수 있습니다.</p>
+                        </div>
+                        <div class="terminal-input-bar">
+                            <input type="text" id="terminal-input" placeholder="명령어를 입력하세요... (예: #ListPlayers 또는 #Announce Hello)" disabled>
+                            <button id="btn-send-command" class="btn btn-blue" disabled>전송</button>
+                        </div>
+                        <div class="macro-commands">
+                            <span>자주 쓰는 매크로:</span>
+                            <button class="btn btn-small btn-macro" data-cmd="#ListPlayers">접속자 조회</button>
+                            <button class="btn btn-small btn-macro" data-cmd="#Save">서버 수동 저장</button>
+                            <button class="btn btn-small btn-macro" data-cmd="#ListVehicles">차량 목록 조회</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 탭 4: 텔레포트 맵 -->
+            <section id="map-tab" class="tab-content">
+                <div class="content-header">
+                    <h1>인터랙티브 텔레포트 맵 헬퍼</h1>
+                    <p>스컴 월드 맵의 임의 지점을 클릭하여 인게임 텔레포트 명령어(#teleport X Y Z)의 정확한 좌표를 계산 및 복사합니다.</p>
+                </div>
+                <div class="map-layout panel">
+                    <div class="map-wrapper">
+                        <!-- 가상 맵 캔버스 (클릭 위치 계산 및 표시) -->
+                        <div id="map-canvas" class="map-canvas">
+                            <div id="map-marker" class="map-marker" style="display: none;"></div>
+                            <span class="map-placeholder-text">SCUM GRID MAP (클릭하여 좌표 획득)</span>
+                        </div>
+                    </div>
+                    <div class="map-info">
+                        <h3>좌표 변환 계산기</h3>
+                        <p>선택된 그리드 지점의 절대 월드 좌표계 계산 결과:</p>
+                        <div class="coordinate-box">
+                            <p>X: <span id="coord-x" class="highlight">0</span></p>
+                            <p>Y: <span id="coord-y" class="highlight">0</span></p>
+                            <p>Z (고도): <input type="number" id="coord-z" value="20000" style="width: 80px; padding: 2px 5px; border-radius: 4px; background: rgba(0,0,0,0.5); color:#fff; border: 1px solid rgba(255,255,255,0.2);"></p>
+                        </div>
+                        <div class="cmd-box">
+                            <label>텔레포트 복사용 명령어</label>
+                            <div class="copy-input-bar">
+                                <input type="text" id="teleport-cmd-output" value="#teleport 0 0 20000" readonly>
+                                <button id="btn-copy-cmd" class="btn btn-blue">복사</button>
+                            </div>
+                        </div>
+                        <p class="desc-text">* 스컴 인게임 채팅창에서 복사한 명령어를 Ctrl+V 하여 관리자 권한으로 지정 좌표 이동이 가능합니다.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

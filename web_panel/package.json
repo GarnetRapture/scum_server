@@ -1,0 +1,17 @@
+{
+  "name": "scum-server-web-panel",
+  "version": "1.0.0",
+  "description": "SCUM Dedicated Server Web GUI Manager Panel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "rcon-client": "^4.2.3",
+    "ws": "^8.16.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
